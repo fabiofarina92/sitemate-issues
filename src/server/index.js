@@ -22,7 +22,7 @@ app.get('/issues/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const issue = issues.find((issue) => issue.id === id);
     if (issue) {
-        res.json(issue);
+        res.status(200).json(issue);
     } else {
         res.status(404).send(`Issue ${id} not found`);
     }
@@ -30,8 +30,12 @@ app.get('/issues/:id', (req, res) => {
 
 // CREATE a new issue
 app.post('/issues', (req, res) => {
-    const { id, title, created_by, description } = req.body;
-    const newIssue = { id, title, created_by, description };
+    const highestId = issues.reduce((prev, curr) => {
+        return prev.id > curr.id ? prev : curr;
+    })
+
+    const { title, created_by, description } = req.body;
+    const newIssue = { id: highestId.id + 1, title, created_by, description };
     issues.push(newIssue);
     console.log(`New issue created:`, newIssue);
     res.status(201).json(newIssue);
@@ -46,7 +50,8 @@ app.put('/issues/:id', (req, res) => {
         issue.title = title;
         issue.created_by = created_by;
         issue.description = description;
-        res.json(issue);
+        console.log(`Updated issue: `, issue);
+        res.status(201).json(issue);
     } else {
         res.status(404).send('Issue not found');
     }
@@ -58,7 +63,8 @@ app.delete('/issues/:id', (req, res) => {
     const issueIndex = issues.findIndex((issue) => issue.id === id);
     if (issueIndex !== -1) {
         const deleteIssue = issues.splice(issueIndex, 1);
-        res.json(deleteIssue[0]);
+        console.log(`Deleted issue: `, deleteIssue[0])
+        res.status(201).json(deleteIssue[0]);
     } else {
         res.status(404).send('Issue not found');
     }
